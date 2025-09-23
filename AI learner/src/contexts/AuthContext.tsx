@@ -40,29 +40,40 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-    
-    console.log('🔍 App start - Token exists:', !!storedToken);
-    console.log('🔍 App start - User exists:', !!savedUser);
-    
-    if (storedToken && savedUser) {
-      try {
-        const userData = JSON.parse(savedUser);
-        setToken(storedToken);
-        setUser(userData);
-        console.log('✅ User restored from localStorage:', userData.displayName);
-      } catch (error) {
-        console.error('❌ Failed to parse saved user');
-        setToken(null);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+    const validateToken = async () => {
+      const storedToken = localStorage.getItem('token');
+      const savedUser = localStorage.getItem('user');
+      
+      console.log('🔍 App start - Token exists:', !!storedToken);
+      console.log('🔍 App start - User exists:', !!savedUser);
+      
+      if (storedToken && savedUser) {
+        try {
+          // Validate token with backend
+          console.log('🔐 Validating token with backend...');
+          const profileData = await authAPI.getProfile();
+          
+          if (profileData.success && profileData.user) {
+            setUser(profileData.user);
+            // Update localStorage with fresh user data
+            localStorage.setItem('user', JSON.stringify(profileData.user));
+            console.log('✅ Token validated, user restored:', profileData.user.displayName);
+          } else {
+            throw new Error('Invalid token response');
+          }
+        } catch (error) {
+          console.error('❌ Token validation failed:', error);
+          setUser(null);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    validateToken();
   }, []);
 
   const updateUser = (userData: User) => {
@@ -79,7 +90,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const data = await authAPI.register(userData);
 
       if (data.success && data.token) {
-        setToken(data.token);
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         setUser(data.user);
@@ -100,7 +110,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const data = await authAPI.login({ email, password });
       
       if (data.success && data.token) {
-        setToken(data.token);
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         setUser(data.user);
@@ -118,7 +127,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     console.log('🔓 Logging out');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    setToken(null);
     setUser(null);
   };
 
