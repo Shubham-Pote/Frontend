@@ -560,6 +560,7 @@ export const characterAPI = {
   sendVoiceMessage: async (sessionId: string, audioFile: File) => {
     // For now, we'll just send a placeholder text message
     // In a real implementation, you'd convert speech to text first
+    console.log('Audio file received:', audioFile.name, audioFile.size);
     const placeholderText = "Voice message received";
     return await characterAPI.sendMessage(sessionId, placeholderText);
   },

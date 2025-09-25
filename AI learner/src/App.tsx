@@ -9,6 +9,7 @@ import Lessons from "./pages/Lessons";
 import Articles from "./pages/Articles";
 import Notes from "./pages/Notes";
 import Character from "./pages/Character";
+import CharacterChat from "./pages/CharacterChat";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
@@ -35,6 +36,13 @@ const App = () => (
           <Route path="/character" element={<Character />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
+        
+        {/* Character Chat - Full Screen Route (no layout) */}
+        <Route path="/character/:characterId" element={
+          <ProtectedRoute>
+            <CharacterChat />
+          </ProtectedRoute>
+        } />
         
         {/* Catch-all Route */}
         <Route path="*" element={<NotFound />} />
