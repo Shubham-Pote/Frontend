@@ -6,6 +6,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Lessons from "./pages/Lessons";
+import LessonView from "./pages/LessonView";
 import Articles from "./pages/Articles";
 import Notes from "./pages/Notes";
 import Character from "./pages/Character";
@@ -36,6 +37,13 @@ const App = () => (
           <Route path="/character" element={<Character />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
+        
+        {/* Lesson View - Full Screen Route (no layout) */}
+        <Route path="/lesson/:id" element={
+          <ProtectedRoute>
+            <LessonView />
+          </ProtectedRoute>
+        } />
         
         {/* Character Chat - Full Screen Route (no layout) */}
         <Route path="/character/:characterId" element={
