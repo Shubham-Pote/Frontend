@@ -39,29 +39,30 @@ class CharacterSocketService {
     }
 
     // Use the current URL's protocol and hostname for WebSocket connection
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     const hostname = window.location.hostname
     const port = '5000' // Backend port - always 5000 regardless of frontend port
     const BACKEND_URL = `http://${hostname}:${port}`
     
-    console.log('🔌 Connecting to WebSocket:', `${BACKEND_URL}/character`)
+    console.log('🔌 Connecting to WebSocket:', BACKEND_URL)
     console.log('🌐 Frontend URL:', window.location.href)
     
     // Get authentication token
     const token = localStorage.getItem('token')
     console.log('🔑 Auth token exists:', !!token)
     
-    this.socket = io(`${BACKEND_URL}/character`, {
-      transports: ['websocket', 'polling'],
+    // Connect to the main Socket.IO server (no namespace)
+    this.socket = io(BACKEND_URL, {
+      transports: ['polling', 'websocket'], // Try polling first, then upgrade
       upgrade: true,
-      rememberUpgrade: true,
+      rememberUpgrade: false, // Don't remember to avoid connection issues
       autoConnect: true,
       reconnection: true,
-      reconnectionAttempts: 2,  // Reduced to 2
-      reconnectionDelay: 3000,  // Increased to 3 seconds
-      reconnectionDelayMax: 10000,  // Max 10 seconds
-      timeout: 10000,  // 10 second connection timeout
-      forceNew: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
+      forceNew: false,
+      withCredentials: false,
       auth: {
         token: token
       }
@@ -91,13 +92,13 @@ class CharacterSocketService {
       console.log('Error details:', error.message)
       this.emit('connection_error', error)
       
-      // Try fallback to mock mode after 3 failed attempts
+      // Try fallback to mock mode after connection attempts fail
       setTimeout(() => {
         if (!this.isConnected) {
-          console.warn('🔄 Switching to mock mode for development')
+          console.warn('🔄 Backend connection failed, switching to mock mode for development')
           this.enableMockMode()
         }
-      }, 5000)
+      }, 3000) // Reduced to 3 seconds for faster testing
     })
 
     // Character response events
@@ -291,7 +292,6 @@ class CharacterSocketService {
     this.emit('connection_status', { connected: true })
     
     // Override sendMessage for mock responses
-    const originalSendMessage = this.sendMessage
     this.sendMessage = (text: string) => {
       console.log('📤 Mock sending:', text)
       
@@ -334,8 +334,25 @@ class CharacterSocketService {
     this.disconnect()
     this.connect()
   }
+
+  // Force a fresh connection (useful for testing)
+  forceReconnect(): void {
+    console.log('🔥 Force reconnecting to backend...')
+    this.disconnect()
+    // Reset mock mode if it was enabled
+    this.isConnected = false
+    setTimeout(() => {
+      this.connect()
+    }, 1000)
+  }
 }
 
 // Export singleton instance
 export const characterSocketService = new CharacterSocketService()
+
+// Add to global scope for debugging
+if (typeof window !== 'undefined') {
+  (window as any).characterSocketService = characterSocketService
+}
+
 export default characterSocketService

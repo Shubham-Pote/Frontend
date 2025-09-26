@@ -57,7 +57,7 @@ const Character = () => {
         {characters.map((character, index) => (
           <div 
             key={character.id}
-            className={`flex items-center gap-12 ${
+            className={`flex items-center ${
               index % 2 === 1 ? 'flex-row-reverse' : ''
             }`}
           >
@@ -83,32 +83,51 @@ const Character = () => {
               </div>
             </div>
 
-            {/* Character Info */}
+            {/* Character Info with Speech Bubble Container */}
             <div className="flex-1 space-y-6">
+              {/* Character Name Header */}
               <h2 className={`text-3xl font-bold tracking-wider ${
                 character.id === 'akira' 
-                  ? 'bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent' 
+                  ? 'bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent text-right' 
                   : 'bg-gradient-to-r from-pink-300 to-purple-400 bg-clip-text text-transparent'
               }`}>
                 {character.name}
               </h2>
               
-              <p className="text-gray-300 text-lg leading-relaxed max-w-2xl">
-                {character.description}
-              </p>
-
-              {/* See Character Button */}
-              <button
-                onClick={() => handleSeeCharacter(character.id)}
-                className={`inline-flex items-center gap-3 text-xl font-medium transition-all duration-300 group px-6 py-3 rounded-full border-2 ${
+              {/* Speech Bubble Container */}
+              <div className="relative">
+                {/* Rectangular container touching the image */}
+                <div className={`p-8 border-2 bg-gradient-to-br ${
                   character.id === 'akira'
-                    ? 'text-yellow-300 border-yellow-300/30 hover:border-yellow-300 hover:bg-yellow-300/10'
-                    : 'text-pink-300 border-pink-300/30 hover:border-pink-300 hover:bg-pink-300/10'
-                }`}
-              >
-                See This Character
-                <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" />
-              </button>
+                    ? 'border-yellow-300/40 from-yellow-500/5 to-orange-500/5'
+                    : 'border-pink-300/40 from-pink-500/5 to-purple-500/5'
+                } backdrop-blur-sm shadow-2xl ${
+                  index % 2 === 1 
+                    ? 'rounded-l-3xl rounded-r-none' 
+                    : 'rounded-r-3xl rounded-l-none'
+                }`}>
+                  
+                  {/* Description Text */}
+                  <p className="text-gray-300 text-lg leading-relaxed">
+                    {character.description}
+                  </p>
+
+                  {/* See Character Button inside container */}
+                  <div className="mt-6">
+                    <button
+                      onClick={() => handleSeeCharacter(character.id)}
+                      className={`inline-flex items-center gap-3 text-lg font-medium transition-all duration-300 group px-6 py-3 rounded-full border-2 ${
+                        character.id === 'akira'
+                          ? 'text-yellow-300 border-yellow-300/50 bg-yellow-300/10 hover:border-yellow-300 hover:bg-yellow-300/20 hover:shadow-lg hover:shadow-yellow-300/25'
+                          : 'text-pink-300 border-pink-300/50 bg-pink-300/10 hover:border-pink-300 hover:bg-pink-300/20 hover:shadow-lg hover:shadow-pink-300/25'
+                      }`}
+                    >
+                      See This Character
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         ))}
